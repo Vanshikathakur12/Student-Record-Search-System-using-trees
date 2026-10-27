@@ -1,0 +1,127 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+struct Node {
+    int id;
+    char name[30], dept[20];
+    struct Node *left, *right;
+};
+
+struct Node* insert(struct Node *r, int id, char name[], char dept[]) {
+    if (r == NULL) {
+        r = malloc(sizeof(struct Node));
+        r->id = id;
+        snprintf(r->name, sizeof(r->name), "%s", name);
+        snprintf(r->dept, sizeof(r->dept), "%s", dept);
+        r->left = r->right = NULL;
+    }
+    else if (id < r->id)
+        r->left = insert(r->left, id, name, dept);
+    else if (id > r->id)
+        r->right = insert(r->right, id, name, dept);
+    else
+        printf("Duplicate ID not allowed!\n");
+    return r;
+}
+
+void search(struct Node *r, int id) {
+    if (r == NULL) printf("Student not found!\n");
+    else if (id == r->id)
+        printf("%d %s %s\n", r->id, r->name, r->dept);
+    else if (id < r->id) search(r->left, id);
+    else search(r->right, id);
+}
+
+struct Node* delete(struct Node *r, int id) {
+    if (r == NULL) return NULL;
+    if (id < r->id) r->left = delete(r->left, id);
+    else if (id > r->id) r->right = delete(r->right, id);
+    else {
+        if (!r->left || !r->right) {
+            struct Node *t = r->left ? r->left : r->right;
+            free(r);
+            return t;
+        }
+        struct Node *t = r->right;
+        while (t->left) t = t->left;
+        r->id = t->id;
+        snprintf(r->name, sizeof(r->name), "%s", t->name);
+        snprintf(r->dept, sizeof(r->dept), "%s", t->dept);
+        r->right = delete(r->right, t->id);
+    }
+    return r;
+}
+
+void inorder(struct Node *r) {
+    if (r) {
+        inorder(r->left);
+        printf("%d %s %s\n", r->id, r->name, r->dept);
+        inorder(r->right);
+    }
+}
+
+void preorder(struct Node *r) {
+    if (r) {
+        printf("%d ", r->id);
+        preorder(r->left);
+        preorder(r->right);
+    }
+}
+
+void postorder(struct Node *r) {
+    if (r) {
+        postorder(r->left);
+        postorder(r->right);
+        printf("%d ", r->id);
+    }
+}
+
+int main() {
+    struct Node *root = NULL;
+    int ch, id;
+    char name[30], dept[20];
+
+    do {
+        printf("\n1.Insert 2.Search 3.Delete\n");
+        printf("4.Inorder 5.Preorder 6.Postorder 7.Exit\n");
+        printf("Choice: ");
+        scanf("%d", &ch);
+
+        switch (ch) {
+            case 1:
+                printf("Enter ID Name Department: ");
+                scanf("%d %29s %19s", &id, name, dept);
+                root = insert(root, id, name, dept);
+                break;
+            case 2:
+                printf("Enter ID: ");
+                scanf("%d", &id);
+                search(root, id);
+                break;
+            case 3:
+                printf("Enter ID to delete: ");
+                scanf("%d", &id);
+                root = delete(root, id);
+                printf("Deletion completed.\n");
+                break;
+            case 4:
+                inorder(root);
+                break;
+            case 5:
+                preorder(root);
+                printf("\n");
+                break;
+            case 6:
+                postorder(root);
+                printf("\n");
+                break;
+            case 7:
+                printf("Program ended.\n");
+                break;
+            default:
+                printf("Invalid choice!\n");
+        }
+    } while (ch != 7);
+
+    return 0;
+}
